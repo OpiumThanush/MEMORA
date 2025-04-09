@@ -1,0 +1,295 @@
+{% extends "layout.html" %}
+
+{% block title %}Write Journal{% endblock %}
+
+{% block content %}
+<div class="write-container">
+    <!-- New Document Interface -->
+    <div id="newDocumentInterface" class="new-document-interface">
+        <h2>Start Writing</h2>
+        <div class="document-options">
+            <div class="create-new-button" onclick="showWriteModal()">
+                <i class="fas fa-plus-circle"></i>
+                <span>New Journal Entry</span>
+            </div>
+            <!-- Future template section -->
+            <div class="templates-section disabled">
+                <h3>Templates</h3>
+                <p>Coming soon...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Write Modal Overlay -->
+    <div id="writeModal" class="write-modal">
+        <div class="write-modal-content">
+            <div class="modal-header">
+                <h2>Write Journal Entry</h2>
+                <button class="close-modal" onclick="closeWriteModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="editor-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="bold" title="Bold">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="italic" title="Italic">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="underline" title="Underline">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <select class="toolbar-select" data-command="formatBlock">
+                            <option value="p">Normal</option>
+                            <option value="h1">Heading 1</option>
+                            <option value="h2">Heading 2</option>
+                            <option value="h3">Heading 3</option>
+                        </select>
+                        <select class="toolbar-select" data-command="fontName">
+                            <option value="inherit">Default</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="insertUnorderedList" title="Bullet List">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="insertOrderedList" title="Numbered List">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" data-command="justifyLeft" title="Align Left">
+                            <i class="fas fa-align-left"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="justifyCenter" title="Align Center">
+                            <i class="fas fa-align-center"></i>
+                        </button>
+                        <button class="toolbar-btn" data-command="justifyRight" title="Align Right">
+                            <i class="fas fa-align-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="journalEntry" class="rich-editor" contenteditable="true" placeholder="Start writing your thoughts here..."></div>
+            </div>
+            <div class="modal-footer">
+                <span id="autoSaveStatus" class="auto-save-status" style="display: none;">
+                    Last auto-saved: Just now
+                </span>
+                <div class="modal-actions">
+                    <button class="secondary-button" onclick="closeWriteModal()">Cancel</button>
+                    <button class="primary-button" onclick="showSaveModal()">Save Journal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Save Details Modal -->
+    <div id="saveModal" class="save-details-modal">
+        <div class="save-details-content">
+            <div class="save-details-header">
+                <h3>Save Journal Entry</h3>
+                <button class="close-modal" onclick="closeSaveModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="save-details-body">
+                <div class="form-group">
+                    <label for="journalTitle">Title</label>
+                    <input type="text" id="journalTitle" placeholder="Enter a title for your journal entry">
+                </div>
+                <div class="form-group">
+                    <label for="journalDate">Date</label>
+                    <input type="date" id="journalDate">
+                </div>
+                <div class="form-group mood-selector disabled">
+                    <label>Mood (Coming soon)</label>
+                    <div class="mood-options">
+                        <span class="mood-option">😊</span>
+                        <span class="mood-option">😐</span>
+                        <span class="mood-option">😔</span>
+                        <span class="mood-option">😤</span>
+                        <span class="mood-option">🤔</span>
+                    </div>
+                </div>
+            </div>
+            <div class="save-details-footer">
+                <button class="secondary-button" onclick="closeSaveModal()">Cancel</button>
+                <button class="primary-button" onclick="saveJournalWithDetails()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let autoSaveInterval = null;
+let lastContent = '';
+
+function initAutoSave() {
+    const isEnabled = localStorage.getItem('autoSave') === 'true';
+    const statusElement = document.getElementById('autoSaveStatus');
+    
+    if (isEnabled) {
+        statusElement.style.display = 'inline';
+        // Clear existing interval if any
+        if (autoSaveInterval) clearInterval(autoSaveInterval);
+        // Start new interval
+        autoSaveInterval = setInterval(tryAutoSave, 10000);
+    } else {
+        statusElement.style.display = 'none';
+        if (autoSaveInterval) {
+            clearInterval(autoSaveInterval);
+            autoSaveInterval = null;
+        }
+    }
+}
+
+function tryAutoSave() {
+    const entry = document.getElementById('journalEntry').innerHTML;
+    if (entry && entry !== lastContent) {
+        lastContent = entry;
+        saveJournalWithDetails(true);
+    }
+}
+
+function saveJournalWithDetails(isAutoSave = false) {
+    const entry = document.getElementById('journalEntry').innerHTML;
+    const title = document.getElementById('journalTitle').value.trim();
+    const date = document.getElementById('journalDate').value.trim();
+    
+    // Don't proceed with auto-save if required fields are missing
+    if (isAutoSave && (!entry || !title || !date)) {
+        return;
+    }
+    
+    // For manual saves, validate all fields
+    if (!isAutoSave) {
+        if (!entry.replace(/<[^>]*>/g, '').trim()) {
+            alert("Please enter some content for your journal entry.");
+            return;
+        }
+        if (!title) {
+            alert("Please enter a title for your journal entry.");
+            return;
+        }
+        if (!date) {
+            alert("Please select a date for your journal entry.");
+            return;
+        }
+    }
+    
+    const journalData = {
+        entry: entry,
+        title: title,
+        date: date
+    };
+    
+    fetch("/save_journal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(journalData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => Promise.reject(data.error));
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (!isAutoSave) {
+            closeSaveModal();
+            showNotification(data.message);
+            setTimeout(() => {
+                closeWriteModal();
+            }, 1000);
+        } else {
+            const status = document.getElementById('autoSaveStatus');
+            status.textContent = 'Last auto-saved: Just now';
+            status.style.display = 'inline';
+        }
+    })
+    .catch(error => {
+        if (!isAutoSave) {
+            alert("Error saving: " + error);
+        }
+        console.error("Save error:", error);
+    });
+}
+
+function initEditor() {
+    const toolbar = document.querySelector('.editor-toolbar');
+    toolbar.addEventListener('click', (e) => {
+        const button = e.target.closest('.toolbar-btn');
+        if (button) {
+            e.preventDefault();
+            const command = button.dataset.command;
+            document.execCommand(command, false, null);
+            button.classList.toggle('active');
+        }
+    });
+
+    const selects = document.querySelectorAll('.toolbar-select');
+    selects.forEach(select => {
+        select.addEventListener('change', (e) => {
+            const command = select.dataset.command;
+            const value = select.value;
+            document.execCommand(command, false, value);
+        });
+    });
+}
+
+window.addEventListener('load', function() {
+    initAutoSave();
+    lastContent = document.getElementById('journalEntry').innerHTML;
+    initEditor();
+});
+
+window.addEventListener('autoSaveChanged', function(e) {
+    initAutoSave();
+});
+
+window.addEventListener('storage', function(e) {
+    if (e.key === 'autoSave') {
+        initAutoSave();
+    }
+});
+
+function showWriteModal() {
+    document.getElementById('writeModal').classList.add('active');
+}
+
+function closeWriteModal() {
+    if (document.getElementById('journalEntry').innerHTML.trim()) {
+        if (!confirm('Are you sure you want to close? Any unsaved changes will be lost.')) {
+            return;
+        }
+    }
+    document.getElementById('writeModal').classList.remove('active');
+    document.getElementById('journalEntry').innerHTML = '';
+}
+
+function showSaveModal() {
+    const saveModal = document.getElementById('saveModal');
+    saveModal.classList.add('active');
+    
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('journalDate').value = today;
+    
+    // Focus on title input
+    document.getElementById('journalTitle').focus();
+}
+
+function closeSaveModal() {
+    const saveModal = document.getElementById('saveModal');
+    saveModal.classList.remove('active');
+}
+</script>
+{% endblock %}

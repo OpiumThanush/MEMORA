@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Memora{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/welcome.css') }}">
+</head>
+<body>
+    <div id="welcomeOverlay" class="welcome-overlay">
+        <div class="welcome-content">
+            <div class="welcome-logo">Memora</div>
+            <div class="welcome-tagline">Your Personal Journal Companion</div>
+        </div>
+    </div>
+    
+    <div id="contentContainer" class="content-container">
+        <script>
+            // Initialize theme and font size from localStorage
+            document.addEventListener('DOMContentLoaded', function() {
+                const currentTheme = localStorage.getItem('theme') || 'default';
+                const currentSize = localStorage.getItem('fontSize') || 'medium';
+                document.body.setAttribute('data-theme', currentTheme);
+                document.body.className = `font-${currentSize}`;
+            });
+        </script>
+        <div class="main-container">
+            <div class="sidebar">
+                <h1 class="sidebar-title">Memora</h1>
+                <nav>
+                    <a href="/" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                        <i class="fas fa-home"></i> Dashboard
+                    </a>
+                    <a href="/write" class="nav-item {% if request.path == '/write' %}active{% endif %}">
+                        <i class="fas fa-pen"></i> Write Journal
+                    </a>
+                    <a href="/journals" class="nav-item {% if request.path == '/journals' %}active{% endif %}">
+                        <i class="fas fa-book"></i> My Journals
+                    </a>
+                    <a href="/chat" class="nav-item {% if request.path == '/chat' %}active{% endif %}">
+                        <i class="fas fa-comments"></i> AI Chat
+                    </a>
+                    <a href="/settings" class="nav-item {% if request.path == '/settings' %}active{% endif %}">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                </nav>
+            </div>
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if this is the first visit
+            if (!localStorage.getItem('hasVisitedBefore')) {
+                // Show welcome animation
+                setTimeout(() => {
+                    document.getElementById('welcomeOverlay').classList.add('fade-out');
+                    document.getElementById('contentContainer').classList.add('visible');
+                    // Set the flag in localStorage
+                    localStorage.setItem('hasVisitedBefore', 'true');
+                }, 2500);
+            } else {
+                // Skip animation for returning visitors
+                document.getElementById('welcomeOverlay').style.display = 'none';
+                document.getElementById('contentContainer').classList.add('visible');
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

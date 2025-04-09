@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <h2>Settings</h2>
+    
+    <div class="settings-section">
+        <h3>App Settings</h3>
+        
+        <div class="setting-item">
+            <label>Theme:</label>
+            <select id="themeSelect" class="theme-select">
+                <option value="default">Default Blue</option>
+                <option value="purple">Royal Purple</option>
+                <option value="green">Forest Green</option>
+                <option value="dark">Dark Mode</option>
+                <option value="sunset">Sunset Orange</option>
+            </select>
+        </div>
+
+        <div class="setting-item">
+            <label>Font Size:</label>
+            <div class="font-size-controls">
+                <button class="font-size-btn" data-size="small">Small</button>
+                <button class="font-size-btn" data-size="medium">Medium</button>
+                <button class="font-size-btn" data-size="large">Large</button>
+            </div>
+        </div>
+
+        <div class="setting-item">
+            <label>Auto-save:</label>
+            <div class="switch">
+                <input type="checkbox" id="autoSaveToggle">
+                <span class="slider"></span>
+            </div>
+            <span class="setting-description">Auto-save journal entries every 10 seconds</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Font size controls
+    const fontSizeButtons = document.querySelectorAll('.font-size-btn');
+    const currentSize = localStorage.getItem('fontSize') || 'medium';
+    
+    document.querySelector(`[data-size="${currentSize}"]`).classList.add('active');
+    
+    fontSizeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const size = this.dataset.size;
+            document.body.className = `font-${size}`;
+            localStorage.setItem('fontSize', size);
+            
+            fontSizeButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Theme selection
+    const themeSelect = document.getElementById('themeSelect');
+    const currentTheme = localStorage.getItem('theme') || 'default';
+    
+    themeSelect.value = currentTheme;
+    
+    themeSelect.addEventListener('change', function() {
+        const theme = this.value;
+        document.body.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+    });
+
+    // Auto-save toggle
+    const autoSaveToggle = document.getElementById('autoSaveToggle');
+    autoSaveToggle.checked = localStorage.getItem('autoSave') === 'true';
+    
+    autoSaveToggle.addEventListener('change', function() {
+        const isEnabled = this.checked;
+        localStorage.setItem('autoSave', isEnabled);
+        
+        // Broadcast the change to other pages
+        window.dispatchEvent(new CustomEvent('autoSaveChanged', {
+            detail: { enabled: isEnabled }
+        }));
+    });
+});
+</script>
+{% endblock %}

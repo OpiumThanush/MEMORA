@@ -1,0 +1,55 @@
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.8s ease-out;
+}
+
+.welcome-content {
+    text-align: center;
+    color: white;
+    transform: translateY(30px);
+    opacity: 0;
+    animation: welcomeIn 1s ease-out forwards;
+}
+
+.welcome-logo {
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    letter-spacing: -1px;
+}
+
+.welcome-tagline {
+    font-size: 1.5rem;
+    opacity: 0.9;
+}
+
+@keyframes welcomeIn {
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.welcome-overlay.fade-out {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.content-container {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+
+.content-container.visible {
+    opacity: 1;
+}

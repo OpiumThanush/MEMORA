@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memora</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Memora</h1>
+        
+        <div class="app-container">
+            <div class="left-panel">
+                <h3>Write a Journal Entry</h3>
+                <textarea id="journalEntry" placeholder="Start writing your thoughts here..."></textarea><br>
+                <input type="text" id="filename" placeholder="Enter filename">
+                <button onclick="saveJournal()">Save Journal</button>
+                
+                <h3>Saved Journals</h3>
+                <button onclick="listJournals()">Refresh List</button>
+                <ul id="journalList"></ul>
+            </div>
+            
+            <div class="right-panel">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <span class="chat-title">Chat</span>
+                        <div class="toggle-container">
+                            <span class="toggle-label">Voice Mode</span>
+                            <label class="switch">
+                                <input type="checkbox" id="voiceToggle">
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="message ai">
+                            <div class="message-content">
+                                Welcome to Memora! Select a journal and start a conversation.
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input-container" id="textInputContainer">
+                        <textarea id="chatInput" placeholder="Ask about your journal..."></textarea>
+                        <button onclick="chatWithAI()">Send</button>
+                    </div>
+                    
+                    <div class="voice-input-container" id="voiceInputContainer" style="display: none;">
+                        <div class="voice-button-container">
+                            <button id="voiceButton" class="voice-button">
+                                <i class="fas fa-microphone"></i>
+                                <span>Talk to AI</span>
+                            </button>
+                        </div>
+                        <div id="voiceFeedback" class="voice-feedback">
+                            Click the microphone to start speaking
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Audio element for speech synthesis -->
+    <audio id="aiVoice" style="display: none;"></audio>
+    
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

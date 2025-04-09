@@ -1,0 +1,76 @@
+{% extends "layout.html" %}
+
+{% block title %}My Journals{% endblock %}
+
+{% block content %}
+<div class="journals-container">
+    <div class="journals-grid">
+        <div class="journals-list">
+            <h2>My Journals</h2>
+            <button onclick="listJournals()">Refresh List</button>
+            <ul id="journalList"></ul>
+        </div>
+        
+        <!-- Add journal details section -->
+        <div class="journal-content">
+            <div id="journalDetails" class="journal-details hidden">
+                <div class="details-header">
+                    <i class="fas fa-book-open"></i>
+                    <h3 id="journalTitle">Select a journal</h3>
+                </div>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <i class="fas fa-calendar"></i>
+                        <div class="detail-content">
+                            <label>Date</label>
+                            <span id="journalDate">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-align-left"></i>
+                        <div class="detail-content">
+                            <label>Length</label>
+                            <span id="journalLength">-</span>
+                        </div>
+                    </div>
+                    <div class="detail-item tags-section">
+                        <i class="fas fa-tags"></i>
+                        <div class="detail-content">
+                            <label>Tags</label>
+                            <div class="tags-placeholder">Coming soon</div>
+                        </div>
+                    </div>
+                    <div class="detail-item mood-section">
+                        <i class="fas fa-smile"></i>
+                        <div class="detail-content">
+                            <label>Mood</label>
+                            <div class="mood-placeholder">Coming soon</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="journal-preview" id="journalPreview">
+                <h3>Preview</h3>
+                <div class="preview-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+window.onload = function() {
+    listJournals();
+    
+    // Restore selected journal if exists
+    const storedJournal = sessionStorage.getItem('selectedJournal');
+    if (storedJournal) {
+        selectedJournal = storedJournal;
+        const storedContent = sessionStorage.getItem('journalContent');
+        if (storedContent) {
+            document.querySelector('.preview-content').textContent = storedContent;
+        }
+    }
+};
+</script>
+{% endblock %}

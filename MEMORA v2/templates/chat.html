@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Chat with AI{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <div class="chat-header">
+        <span class="chat-title">Chat with AI</span>
+        <div class="chat-controls">
+            <button onclick="clearChat()" class="clear-btn">
+                <i class="fas fa-trash"></i> Clear Chat
+            </button>
+            <div class="toggle-container">
+                <span class="toggle-label">Voice Mode</span>
+                <label class="switch">
+                    <input type="checkbox" id="voiceToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="chatMessages" class="chat-messages">
+        <div class="message ai">
+            <div class="message-content">
+                Select a journal and start a conversation.
+            </div>
+        </div>
+    </div>
+    
+    <div id="textInputContainer" class="chat-input-container">
+        <textarea id="chatInput" placeholder="Ask about your journal..."></textarea>
+        <button onclick="chatWithAI()">Send</button>
+    </div>
+    
+    <div id="voiceInputContainer" class="voice-input-container" style="display: none;">
+        <div class="voice-button-container">
+            <button id="voiceButton" class="voice-button" onclick="startListening()">
+                <i class="fas fa-microphone"></i>
+                <span>Talk to AI</span>
+            </button>
+        </div>
+        <div id="voiceFeedback" class="voice-feedback">
+            Click the microphone to start speaking
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load saved chat history
+    const savedChat = localStorage.getItem('chatHistory');
+    if (savedChat) {
+        document.getElementById('chatMessages').innerHTML = savedChat;
+    }
+
+    // Initialize voice toggle
+    const voiceToggle = document.getElementById('voiceToggle');
+    const voiceButton = document.getElementById('voiceButton');
+    const textInputContainer = document.getElementById('textInputContainer');
+    const voiceInputContainer = document.getElementById('voiceInputContainer');
+
+    // Set initial state
+    voiceMode = false;
+    voiceToggle.checked = false;
+
+    // Handle voice toggle
+    voiceToggle.addEventListener('change', function() {
+        voiceMode = this.checked;
+        textInputContainer.style.display = voiceMode ? 'none' : 'flex';
+        voiceInputContainer.style.display = voiceMode ? 'flex' : 'none';
+        
+        if (voiceMode) {
+            if (!speechRecognition) {
+                initSpeechRecognition();
+            }
+        } else {
+            stopListening();
+            if (currentlySpeaking) {
+                stopSpeaking();
+            }
+        }
+    });
+
+    // Handle voice button clicks
+    voiceButton.addEventListener('click', function() {
+        if (isListening) {
+            stopListening();
+        } else {
+            startListening();
+        }
+    });
+});
+
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat history?')) {
+        document.getElementById('chatMessages').innerHTML = `
+            <div class="message ai">
+                <div class="message-content">
+                    Select a journal and start a conversation.
+                </div>
+            </div>
+        `;
+        localStorage.removeItem('chatHistory');
+    }
+}
+</script>
+{% endblock %}
